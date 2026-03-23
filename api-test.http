@@ -1,0 +1,96 @@
+@baseUrl = http://localhost:8000
+
+### --------------------
+### USERS - list & details
+### --------------------
+
+GET {{baseUrl}}/api/users
+
+### Get single user (replace 1 with a real id)
+GET {{baseUrl}}/api/users/1
+
+### --------------------
+### USERS - create/update/delete
+### --------------------
+
+POST {{baseUrl}}/api/users
+Content-Type: application/json
+
+{
+  "name": "Ryann",
+  "email": "Nedra_Casper@yahoo.com",
+  "password": "R1LENfuGqOzUcQN"
+}
+
+### Update user (replace 1 with a real id)
+PUT {{baseUrl}}/api/users/3
+Content-Type: application/json
+
+{
+  "name": "Melyna"
+}
+
+### Delete user (replace 1 with a real id)
+DELETE {{baseUrl}}/api/users/1
+
+### --------------------
+### PRODUCTS - list & details
+### --------------------
+
+GET {{baseUrl}}/api/products
+
+### Get single product (replace 1 with a real id)
+GET {{baseUrl}}/api/products/1
+
+### --------------------
+### PRODUCTS - create/update/delete
+### --------------------
+
+POST {{baseUrl}}/api/products
+Content-Type: application/json
+
+{
+  "name": "Generic Soft Mouse",
+  "description": "Carbonite web goalkeeper gloves are ergonomically designed to give easy fit",
+  "sku": "generic-soft-mouse",
+  "quantity": 10
+}
+
+### Update product (replace 1 with a real id)
+PUT {{baseUrl}}/api/products/3
+Content-Type: application/json
+
+{
+  "quantity": 50
+}
+
+### Delete product (replace 1 with a real id)
+DELETE {{baseUrl}}/api/products/1
+
+### --------------------
+### PURCHASES - create & list by user
+### --------------------
+
+### Create a purchase (replace userId/productId with real ids)
+POST {{baseUrl}}/api/purchases
+Content-Type: application/json
+
+{
+  "userId": 1,
+  "productId": 1,
+  "quantity": 2
+}
+
+### Create another purchase for same user+product (tests merge/update logic)
+POST {{baseUrl}}/api/purchases
+Content-Type: application/json
+
+{
+  "userId": 2,
+  "productId": 1,
+  "quantity": 10
+}
+
+### List purchased products for a user (replace 1 with a real user id)
+GET {{baseUrl}}/api/users/2/purchases
+

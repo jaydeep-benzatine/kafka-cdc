@@ -1,0 +1,14 @@
+{
+  "js/ts.experimental.useTsgo": true,
+  "cSpell.words": [
+    "oxfmt",
+    "oxlint"
+  ],
+  "oxc.fmt.configPath": ".oxfmtrc.json",
+  "editor.defaultFormatter": "oxc.oxc-vscode",
+  "editor.formatOnSave": true,
+  "oxc.typeAware": true,
+  "[typescript]": {
+    "editor.defaultFormatter": "oxc.oxc-vscode"
+  }
+}
