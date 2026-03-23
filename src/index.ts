@@ -31,7 +31,7 @@ app.get("/health", async (req: Request, res: Response) => {
   });
 });
 
-app.use((error: Error, req: Request, res: Response, next: NextFunction) => {
+app.use((error: Error, req: Request, res: Response, _next: NextFunction) => {
   // Log the error (use your preferred logger)
   console.error("Error:", error.message);
   console.error("Stack:", error.stack);
