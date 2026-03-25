@@ -1,8 +1,11 @@
 {
   "js/ts.experimental.useTsgo": true,
   "cSpell.words": [
+    "debezium",
+    "dpage",
     "oxfmt",
-    "oxlint"
+    "oxlint",
+    "pgadmin"
   ],
   "oxc.fmt.configPath": ".oxfmtrc.json",
   "editor.defaultFormatter": "oxc.oxc-vscode",
