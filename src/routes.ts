@@ -3,7 +3,7 @@ import { db } from "./db/client";
 import { userTable, productTable, purchasedProductTable } from "./db/schema";
 import { and, desc, eq } from "drizzle-orm";
 import { asyncHandler } from "./utils/async-handler";
-import { validateSchema } from "./utils/validate-sceham";
+import { validateSchema } from "./utils/validate-schema";
 import { createUserSchema, updateUserSchema } from "./validators/users.validators";
 import { createProductSchema, updateProductSchema } from "./validators/product.validators";
 import { createPurchasedProductSchema } from "./validators/purchased-product.validators";
