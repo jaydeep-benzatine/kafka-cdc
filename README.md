@@ -15,7 +15,7 @@ Debezium captures row-level changes from PostgreSQL's **Write-Ahead Log (WAL)** 
 ```
 +-----------+        WAL         +-------------+        CDC Events        +-------+
 | Postgres  |  ----------------> |  Debezium   | -----------------------> | Kafka |
-+-----------+                    +-------------+                           +-------+
++-----------+                    +-------------+                          +-------+
                                       |
                                       |
                                Kafka Topics
@@ -279,6 +279,42 @@ kafka-console-consumer \
 --topic cdc.public.users \
 --from-beginning
 ```
+
+---
+
+# Node.js Kafka Consumer (KafkaJS)
+
+This repository includes a **simple Node.js consumer** that demonstrates how applications can consume CDC events.
+
+Location of the consumer:
+
+```
+kafka-consumer/consumer.ts
+```
+
+This consumer:
+
+* Connects to Kafka using **KafkaJS**
+* Subscribes to the CDC topic
+* Reads CDC events produced by Debezium
+* Logs the events to the terminal
+
+### Run the consumer
+
+```bash
+bun kafka-consumer/consumer.ts
+```
+
+Once running, any database change will appear in the terminal.
+
+Example output:
+
+```
+Message received for partition:0
+User:3 purchased product:1 of quantity:20
+```
+
+This demonstrates how **downstream services can react to database changes in real time**.
 
 ---
 
