@@ -1,7 +1,7 @@
 import { Router, type Request, type Response } from "express";
 import { db } from "./db/client";
 import { userTable, productTable, purchasedProductTable } from "./db/schema";
-import { and, desc, eq } from "drizzle-orm";
+import { and, desc, eq, sql } from "drizzle-orm";
 import { asyncHandler } from "./utils/async-handler";
 import { validateSchema } from "./utils/validate-schema";
 import { createUserSchema, updateUserSchema } from "./validators/users.validators";
@@ -152,6 +152,12 @@ router.get(
         sku: productTable.sku,
         quantity: productTable.quantity,
         createdAt: productTable.createdAt,
+        status: sql<string>`
+          CASE
+            WHEN ${productTable.quantity} > 0 THEN 'In Stock'
+            ELSE 'Out Of Stock'
+          END
+        `.as("status"),
       })
       .from(productTable)
       .orderBy(desc(productTable.createdAt))
@@ -285,73 +291,82 @@ router.delete(
 router.post(
   "/purchases",
   asyncHandler(async (req: Request, res: Response) => {
-    const data = validateSchema(createPurchasedProductSchema, req.body);
+    try {
+      const data = validateSchema(createPurchasedProductSchema, req.body);
 
-    const user = await db.select().from(userTable).where(eq(userTable.id, data.userId)).limit(1);
+      const user = await db.select().from(userTable).where(eq(userTable.id, data.userId)).limit(1);
 
-    if (user.length === 0) {
-      return res.status(404).json({ message: "User not found" });
-    }
+      if (user.length === 0) {
+        return res.status(404).json({ message: "User not found" });
+      }
 
-    const [product] = await db
-      .select()
-      .from(productTable)
-      .where(eq(productTable.id, data.productId))
-      .limit(1);
+      const [product] = await db
+        .select()
+        .from(productTable)
+        .where(eq(productTable.id, data.productId))
+        .limit(1);
 
-    if (!product) {
-      return res.status(404).json({ message: "Product not found" });
-    }
+      if (!product) {
+        return res.status(404).json({ message: "Product not found" });
+      }
 
-    const currentProductQuantity = product.quantity!;
+      const currentProductQuantity = product.quantity!;
 
-    if (currentProductQuantity < data.quantity) {
-      return res.status(400).json({
-        message: "Insufficient product quantity",
-      });
-    }
+      if (currentProductQuantity < data.quantity) {
+        return res.status(400).json({
+          message: "Insufficient product quantity",
+        });
+      }
 
-    // Decrement available stock
-    await db
-      .update(productTable)
-      .set({ quantity: currentProductQuantity - data.quantity })
-      .where(eq(productTable.id, data.productId));
+      // Decrement available stock
+      await db
+        .update(productTable)
+        .set({ quantity: currentProductQuantity - data.quantity })
+        .where(eq(productTable.id, data.productId))
+        .catch((error) => {
+          console.log("Error Occurred While Updating products quantity");
+          console.log("Error:", error);
+        });
 
-    // Merge purchases if the user already purchased the same product.
-    const [existingPurchase] = await db
-      .select()
-      .from(purchasedProductTable)
-      .where(
-        and(
-          eq(purchasedProductTable.userId, data.userId),
-          eq(purchasedProductTable.productId, data.productId),
-        ),
-      )
-      .limit(1);
-
-    if (existingPurchase) {
-      const updatedQuantity = existingPurchase.quantity + data.quantity;
-      const updatedPurchase = await db
-        .update(purchasedProductTable)
-        .set({ quantity: updatedQuantity })
+      // Merge purchases if the user already purchased the same product.
+      const [existingPurchase] = await db
+        .select()
+        .from(purchasedProductTable)
         .where(
           and(
             eq(purchasedProductTable.userId, data.userId),
             eq(purchasedProductTable.productId, data.productId),
           ),
-        );
+        )
+        .limit(1);
 
+      if (existingPurchase) {
+        const updatedQuantity = existingPurchase.quantity + data.quantity;
+        const updatedPurchase = await db
+          .update(purchasedProductTable)
+          .set({ quantity: updatedQuantity })
+          .where(
+            and(
+              eq(purchasedProductTable.userId, data.userId),
+              eq(purchasedProductTable.productId, data.productId),
+            ),
+          );
+
+        return res.status(200).json({
+          message: "Product purchased updated successfully",
+          data: updatedPurchase,
+        });
+      }
+
+      const newPurchase = await db.insert(purchasedProductTable).values(data);
       return res.status(200).json({
-        message: "Product purchased updated successfully",
-        data: updatedPurchase,
+        message: "Product purchased successfully",
+        data: newPurchase,
       });
+    } catch (error) {
+      console.log("Error Occurred");
+      console.log(error);
     }
-
-    const newPurchase = await db.insert(purchasedProductTable).values(data);
-    return res.status(200).json({
-      message: "Product purchased successfully",
-      data: newPurchase,
-    });
   }),
 );
 

@@ -28,6 +28,7 @@ export const productTable = pgTable("products", {
 });
 
 export const purchasedProductTable = pgTable("purchased_products", {
+  id: t.integer().primaryKey().generatedAlwaysAsIdentity(),
   userId: t
     .integer("user_id")
     .notNull()
